@@ -1,0 +1,4 @@
+#in material class to define the self.de we should do via field but no dot product for field
+so we can write the dot product manually in taichi space or can define them as ti.matrix
+but ti.Matrix is inefficeint for large matrix like 6*6 and warning is thrown
+
