@@ -8,6 +8,7 @@ nsteps = 5200
 L = 25
 rho = 1
 nelements = 13
+tol=1e-12
 dx = L / nelements
 x_n = ti.field(ti.f32, shape=(nelements + 1))
 

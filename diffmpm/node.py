@@ -1,10 +1,37 @@
 from typing import Callable, Tuple
 import taichi as ti
+
 ti.init(arch=ti.gpu)
 
-#is the initalized required for taichi as in jax it is used for jit compilation of jax
+
+# is the initalized required for taichi as in jax it is used for jit compilation of jax
 @ti.data_oriented
 class Nodes:
+    """
+    Nodes container class.
+
+    Keeps track of all values required for nodal points.
+
+    Attributes
+    ----------
+    nnodes : int
+        Number of nodes stored.
+    loc : array_like
+        Location of all the nodes.
+    velocity : array_like
+        Velocity of all the nodes.
+    mass : array_like
+        Mass of all the nodes.
+    momentum : array_like
+        Momentum of all the nodes.
+    f_int : array_like
+        Internal forces on all the nodes.
+    f_ext : array_like
+        External forces present on all the nodes.
+    f_damp : array_like
+        Damping forces on the nodes.
+    """
+
     def __init__(
         self,
         nnodes: ti.i32,
@@ -12,6 +39,22 @@ class Nodes:
         initialized: bool = None,
         data: Tuple[ti.field, ...] = tuple(),
     ):
+        """
+        Initialize container for Nodes.
+
+        Parameters
+        ----------
+        nnodes : int
+            Number of nodes stored.
+        loc : array_like
+            Locations of all the nodes. Expected shape (nnodes, 1, ndim)
+        initialized: bool
+            False if node property arrays like mass need to be initialized.
+        If True, they are set to values from `data`.
+        data: tuple
+            Tuple of length 7 that sets arrays for mass, density, volume,
+        """
+
         self.nnodes = nnodes
         if len(loc.shape) != 3:
             raise ValueError(
@@ -54,12 +97,23 @@ class Nodes:
         self.f_int.fill(0)
         self.f_ext.fill(0)
         self.f_damp.fill(0)
-    
+
     def __len__(self):
+        """Set length of class as number of nodes."""
         return self.nnodes
-    
+
     def __repr__(self):
+        """Repr containing number of nodes."""
         return f"Node(nnodes={self.nnodes})"
-    
+
     def get_total_force(self):
-        return self.f_int + self.f_ext + self.f_damp
+        """Calculate total force on the nodes."""
+        tot_f = ti.field(ti.f32, self.f_int.shape)
+
+        @ti.kernel
+        def fill_tot_f():
+            for i in range(self.f_int.shape[0]):
+                tot_f[i] = self.f_int[i] + self.f_ext[i] + self.f_damp[i]
+
+        fill_tot_f()
+        return tot_f

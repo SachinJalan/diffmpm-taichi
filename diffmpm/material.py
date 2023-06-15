@@ -7,9 +7,18 @@ ti.init(arch=ti.gpu)
 
 @ti.data_oriented
 class Material(abc.ABC):
+    """Base material class."""
     _props = ()
 
     def __init__(self, material_properties):
+        """
+        Initialize material properties.
+
+        Arguments
+        ---------
+        material_properties: dict
+            A key-value map for various material properties.
+        """
         self.properties = material_properties
 
     @abc.abstractmethod
@@ -30,9 +39,19 @@ class Material(abc.ABC):
 
 @ti.data_oriented
 class LinearElastic(Material):
+    """Linear Elastic Material."""
     _props = ("density", "youngs_modulus", "poisson_ratio")
 
     def __init__(self, material_properties):
+        """
+        Create a Linear Elastic material.
+
+        Arguments
+        ---------
+        material_properties: dict
+            Dictionary with material properties. For linear elastic
+        materials, 'density' and 'youngs_modulus' are required keys.
+        """
         self.validate_props(material_properties)
         youngs_modulus = material_properties["youngs_modulus"]
         poisson_ratio = material_properties["poisson_ratio"]
